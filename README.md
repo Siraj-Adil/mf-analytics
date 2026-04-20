@@ -264,4 +264,4 @@ curl http://localhost:9000/sync/status
 
 ## Design Reference
 
-For architectural decisions and trade-offs, see `DESIGN_DECISIONS.md`.
+For architectural decisions and trade-offs, see [DESIGN_DECISIONS.md](./DESIGN_DECISIONS.md).

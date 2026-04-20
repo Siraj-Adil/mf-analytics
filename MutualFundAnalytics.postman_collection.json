@@ -1,0 +1,556 @@
+{
+	"info": {
+		"name": "Mutual Fund Analytics",
+		"description": "REST API for the Go-based Mutual Fund Analytics service. Tracks NAV history for Mid Cap and Small Cap Direct Growth plans from ICICI Prudential, HDFC, Axis, SBI, and Kotak Mahindra. Base URL: http://localhost:9000",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:9000",
+			"type": "string"
+		},
+		{
+			"key": "fund_code",
+			"value": "125354",
+			"description": "Axis Small Cap Fund - Direct Plan - Growth",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Health",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/healthz",
+							"host": ["{{base_url}}"],
+							"path": ["healthz"]
+						},
+						"description": "Returns service health status and current UTC time."
+					},
+					"response": [
+						{
+							"name": "200 OK",
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"body": "{\"service\":\"mutual-fund-analytics\",\"status\":\"ok\",\"time\":\"2026-04-19T14:00:00Z\"}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Funds",
+			"item": [
+				{
+					"name": "List All Funds",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/funds",
+							"host": ["{{base_url}}"],
+							"path": ["funds"]
+						},
+						"description": "Returns all tracked funds with their latest NAV."
+					}
+				},
+				{
+					"name": "List Funds — Filter by Category (Small Cap)",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/funds?category=Small Cap",
+							"host": ["{{base_url}}"],
+							"path": ["funds"],
+							"query": [
+								{
+									"key": "category",
+									"value": "Small Cap"
+								}
+							]
+						},
+						"description": "Filter funds by category substring. Examples: 'Small Cap', 'Mid Cap'."
+					}
+				},
+				{
+					"name": "List Funds — Filter by AMC",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/funds?amc=HDFC",
+							"host": ["{{base_url}}"],
+							"path": ["funds"],
+							"query": [
+								{
+									"key": "amc",
+									"value": "HDFC"
+								}
+							]
+						},
+						"description": "Filter funds by AMC name substring. Examples: 'HDFC', 'Axis', 'SBI', 'ICICI', 'Kotak'."
+					}
+				},
+				{
+					"name": "Get Fund Detail",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/funds/{{fund_code}}",
+							"host": ["{{base_url}}"],
+							"path": ["funds", "{{fund_code}}"]
+						},
+						"description": "Returns metadata and latest NAV for a single fund identified by its scheme code."
+					},
+					"response": [
+						{
+							"name": "404 Not Found",
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "json",
+							"body": "{\"error\":\"fund not found: 999999\"}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Analytics",
+			"item": [
+				{
+					"name": "Pre-computed Analytics — 1Y Window",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/funds/{{fund_code}}/analytics?window=1Y",
+							"host": ["{{base_url}}"],
+							"path": ["funds", "{{fund_code}}", "analytics"],
+							"query": [
+								{
+									"key": "window",
+									"value": "1Y"
+								}
+							]
+						},
+						"description": "Returns pre-computed rolling returns, max drawdown, and CAGR for the 1-year window. Results are computed during sync and served from SQLite (<5ms).\n\nwindow options: 1Y, 3Y, 5Y, 10Y"
+					}
+				},
+				{
+					"name": "Pre-computed Analytics — 3Y Window",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/funds/{{fund_code}}/analytics?window=3Y",
+							"host": ["{{base_url}}"],
+							"path": ["funds", "{{fund_code}}", "analytics"],
+							"query": [
+								{
+									"key": "window",
+									"value": "3Y"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Pre-computed Analytics — 5Y Window",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/funds/{{fund_code}}/analytics?window=5Y",
+							"host": ["{{base_url}}"],
+							"path": ["funds", "{{fund_code}}", "analytics"],
+							"query": [
+								{
+									"key": "window",
+									"value": "5Y"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Pre-computed Analytics — 10Y Window",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/funds/{{fund_code}}/analytics?window=10Y",
+							"host": ["{{base_url}}"],
+							"path": ["funds", "{{fund_code}}", "analytics"],
+							"query": [
+								{
+									"key": "window",
+									"value": "10Y"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Range Analytics — COVID Crash",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/funds/{{fund_code}}/analytics/range?from=2020-03-01&to=2020-09-30",
+							"host": ["{{base_url}}"],
+							"path": ["funds", "{{fund_code}}", "analytics", "range"],
+							"query": [
+								{
+									"key": "from",
+									"value": "2020-03-01"
+								},
+								{
+									"key": "to",
+									"value": "2020-09-30"
+								}
+							]
+						},
+						"description": "On-the-fly analytics for any arbitrary date range. Returns total return, annualized CAGR, and max drawdown computed live from NAV data within that window.\n\nRequired: from (YYYY-MM-DD), to (YYYY-MM-DD)\nOptional: rolling_window (1Y|3Y|5Y|10Y)"
+					}
+				},
+				{
+					"name": "Range Analytics — With Rolling Sub-window",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/funds/{{fund_code}}/analytics/range?from=2018-01-01&to=2023-01-01&rolling_window=1Y",
+							"host": ["{{base_url}}"],
+							"path": ["funds", "{{fund_code}}", "analytics", "range"],
+							"query": [
+								{
+									"key": "from",
+									"value": "2018-01-01"
+								},
+								{
+									"key": "to",
+									"value": "2023-01-01"
+								},
+								{
+									"key": "rolling_window",
+									"value": "1Y"
+								}
+							]
+						},
+						"description": "Adds a 'rolling' block to the response: min/max/median/p25/p75 of 1Y rolling returns measured across every trading day in the range.\n\nrolling_window options: 1Y, 3Y, 5Y, 10Y (only included if the range is long enough)"
+					}
+				},
+				{
+					"name": "Range Analytics — Post-COVID Recovery",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/funds/{{fund_code}}/analytics/range?from=2020-04-01&to=2021-12-31&rolling_window=1Y",
+							"host": ["{{base_url}}"],
+							"path": ["funds", "{{fund_code}}", "analytics", "range"],
+							"query": [
+								{
+									"key": "from",
+									"value": "2020-04-01"
+								},
+								{
+									"key": "to",
+									"value": "2021-12-31"
+								},
+								{
+									"key": "rolling_window",
+									"value": "1Y"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Ranking",
+			"item": [
+				{
+					"name": "Rank Small Cap Funds — 3Y Median Return",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/funds/rank?category=Small Cap&window=3Y&sort_by=median_return",
+							"host": ["{{base_url}}"],
+							"path": ["funds", "rank"],
+							"query": [
+								{
+									"key": "category",
+									"value": "Small Cap"
+								},
+								{
+									"key": "window",
+									"value": "3Y"
+								},
+								{
+									"key": "sort_by",
+									"value": "median_return"
+								}
+							]
+						},
+						"description": "Ranks all funds in the category by the chosen metric for the given window.\n\nRequired: category (substring match), window (1Y|3Y|5Y|10Y)\nOptional: sort_by (median_return|max_drawdown, default: median_return), limit (default: 5)\n\nmax_drawdown sort: less negative = safer = better rank."
+					}
+				},
+				{
+					"name": "Rank Mid Cap Funds — 10Y Median Return",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/funds/rank?category=Mid Cap&window=10Y&sort_by=median_return",
+							"host": ["{{base_url}}"],
+							"path": ["funds", "rank"],
+							"query": [
+								{
+									"key": "category",
+									"value": "Mid Cap"
+								},
+								{
+									"key": "window",
+									"value": "10Y"
+								},
+								{
+									"key": "sort_by",
+									"value": "median_return"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Rank Mid Cap Funds — By Max Drawdown (Safest First)",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/funds/rank?category=Mid Cap&window=5Y&sort_by=max_drawdown&limit=10",
+							"host": ["{{base_url}}"],
+							"path": ["funds", "rank"],
+							"query": [
+								{
+									"key": "category",
+									"value": "Mid Cap"
+								},
+								{
+									"key": "window",
+									"value": "5Y"
+								},
+								{
+									"key": "sort_by",
+									"value": "max_drawdown"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Ranks funds so the one with the smallest (least negative) max drawdown appears first — i.e. the safest fund is ranked #1."
+					}
+				},
+				{
+					"name": "Rank Small Cap Funds — 1Y with Limit",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/funds/rank?category=Small Cap&window=1Y&sort_by=median_return&limit=3",
+							"host": ["{{base_url}}"],
+							"path": ["funds", "rank"],
+							"query": [
+								{
+									"key": "category",
+									"value": "Small Cap"
+								},
+								{
+									"key": "window",
+									"value": "1Y"
+								},
+								{
+									"key": "sort_by",
+									"value": "median_return"
+								},
+								{
+									"key": "limit",
+									"value": "3"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Sync",
+			"item": [
+				{
+					"name": "Trigger Sync",
+					"request": {
+						"method": "POST",
+						"url": {
+							"raw": "{{base_url}}/sync/trigger",
+							"host": ["{{base_url}}"],
+							"path": ["sync", "trigger"]
+						},
+						"description": "Manually triggers the data pipeline: discovers schemes, backfills NAV history from mfapi.in (respecting rate limits: 2/sec, 50/min, 300/hr), and recomputes analytics. Returns immediately with 202 Accepted; the pipeline runs in the background.\n\nReturns 409 Conflict if a sync is already running."
+					},
+					"response": [
+						{
+							"name": "202 Accepted",
+							"status": "Accepted",
+							"code": 202,
+							"_postman_previewlanguage": "json",
+							"body": "{\"message\":\"sync pipeline triggered\",\"status\":\"started\",\"triggered_at\":\"2026-04-19T14:00:00Z\"}"
+						},
+						{
+							"name": "409 Conflict — Already Running",
+							"status": "Conflict",
+							"code": 409,
+							"_postman_previewlanguage": "json",
+							"body": "{\"error\":\"sync pipeline is already running\"}"
+						}
+					]
+				},
+				{
+					"name": "Get Sync Status",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/sync/status",
+							"host": ["{{base_url}}"],
+							"path": ["sync", "status"]
+						},
+						"description": "Returns the current pipeline state (idle/running), per-scheme sync status, and live rate-limiter counters showing requests used in the last second, minute, and hour."
+					}
+				}
+			]
+		},
+		{
+			"name": "Error Cases",
+			"item": [
+				{
+					"name": "Analytics — Missing Window Param",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/funds/{{fund_code}}/analytics",
+							"host": ["{{base_url}}"],
+							"path": ["funds", "{{fund_code}}", "analytics"]
+						},
+						"description": "Omitting the required 'window' parameter returns 400 Bad Request."
+					}
+				},
+				{
+					"name": "Analytics — Invalid Window Value",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/funds/{{fund_code}}/analytics?window=2Y",
+							"host": ["{{base_url}}"],
+							"path": ["funds", "{{fund_code}}", "analytics"],
+							"query": [
+								{
+									"key": "window",
+									"value": "2Y"
+								}
+							]
+						},
+						"description": "Returns 400 Bad Request. Valid values: 1Y, 3Y, 5Y, 10Y."
+					}
+				},
+				{
+					"name": "Range Analytics — Missing from/to",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/funds/{{fund_code}}/analytics/range?to=2020-09-30",
+							"host": ["{{base_url}}"],
+							"path": ["funds", "{{fund_code}}", "analytics", "range"],
+							"query": [
+								{
+									"key": "to",
+									"value": "2020-09-30"
+								}
+							]
+						},
+						"description": "Returns 400 Bad Request when 'from' is missing."
+					}
+				},
+				{
+					"name": "Range Analytics — to Before from",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/funds/{{fund_code}}/analytics/range?from=2021-01-01&to=2020-01-01",
+							"host": ["{{base_url}}"],
+							"path": ["funds", "{{fund_code}}", "analytics", "range"],
+							"query": [
+								{
+									"key": "from",
+									"value": "2021-01-01"
+								},
+								{
+									"key": "to",
+									"value": "2020-01-01"
+								}
+							]
+						},
+						"description": "Returns 400 Bad Request when 'to' is not after 'from'."
+					}
+				},
+				{
+					"name": "Range Analytics — No Data in Range",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/funds/{{fund_code}}/analytics/range?from=2000-01-01&to=2001-01-01",
+							"host": ["{{base_url}}"],
+							"path": ["funds", "{{fund_code}}", "analytics", "range"],
+							"query": [
+								{
+									"key": "from",
+									"value": "2000-01-01"
+								},
+								{
+									"key": "to",
+									"value": "2001-01-01"
+								}
+							]
+						},
+						"description": "Returns 422 Unprocessable Entity when the range contains no NAV data."
+					}
+				},
+				{
+					"name": "Get Fund — Not Found",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/funds/999999",
+							"host": ["{{base_url}}"],
+							"path": ["funds", "999999"]
+						},
+						"description": "Returns 404 Not Found for an unknown scheme code."
+					}
+				},
+				{
+					"name": "Rank Funds — Missing Category",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/funds/rank?window=3Y",
+							"host": ["{{base_url}}"],
+							"path": ["funds", "rank"],
+							"query": [
+								{
+									"key": "window",
+									"value": "3Y"
+								}
+							]
+						},
+						"description": "Returns 400 Bad Request when 'category' is omitted."
+					}
+				}
+			]
+		}
+	]
+}

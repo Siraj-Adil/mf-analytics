@@ -44,7 +44,7 @@ With 300 requests/hour and 10 schemes, each scheme can receive at most 30 API ca
 ### Discovery + Backfill Sequence
 
 ```
-1. GET /mf/         — one request to fetch the full catalogue (~17,000 schemes)
+1. GET /mf/         — one request to fetch the full catalogue (~37,000 schemes)
 2. Filter by name   — no API calls; filter by AMC + category + "Direct" + "Growth"
 3. GET /mf/{code}   — one rate-limited request per candidate to confirm metadata
 4. Store NAV data   — bulk SQLite upsert (no API call)
@@ -92,7 +92,7 @@ The `nav_data` table has a compound primary key on `(scheme_code, date)` which a
 
 ### Why Not a Dedicated Time-Series DB?
 
-InfluxDB or TimescaleDB would offer better compression and time-bucketing functions, but introduce significant operational overhead. With only 10 schemes × ~2,500 trading days × 10 years ≈ 25,000 rows, SQLite is more than sufficient.
+InfluxDB or TimescaleDB would offer better compression and time-bucketing functions, but introduce significant operational overhead. With only 10 schemes × ~250 trading days per year × 10 years ≈ 25,000 rows, SQLite is more than sufficient.
 
 ---
 
@@ -138,21 +138,21 @@ Some schemes may have fewer than `N` years of NAV history. We handle this gracef
 
 ---
 
-## 6. Evolving Beyond the Assignment
+## 6. What can be improved?
 
 The system is designed to answer arbitrary time-range queries, not just fixed windows:
 
-- **Post-event analytics**: Because we store the full NAV history, any application-level date range query (e.g., "returns from March 2020 to December 2020" for COVID analysis) can be computed against the raw `nav_data` table.
+- **Caching on Range Endpoint**: Add caching for GET /funds/{code}/analytics/range (keyed by code+from+to+rolling_window) to avoid recomputing repeated queries.
 
-- **Custom windows**: The analytics engine's `computeWindow` function accepts any `AnalyticsWindow`; adding a new window (e.g., `6M`) requires only a config change and an analytics re-computation.
+- **Adding Custom windows**: The analytics engine's `computeWindow` function accepts any `AnalyticsWindow`; adding a new window (e.g., `6M`) requires only a config change and an analytics re-computation.
 
 - **Cross-fund comparisons**: The ranking endpoint (`GET /funds/rank`) already supports sorting by median return or max drawdown. It can be extended to support additional metrics (Sharpe ratio, Sortino ratio) by adding computed columns to the `analytics` table.
 
-- **Event tagging**: An `events` table could store named market events (demonetisation, COVID crash, rate hikes) with date ranges. Analytics could then be re-computed for event-relative windows to answer "how did each fund perform in the 6 months after COVID?"
+**Security and ops**: Protect REST endpoints with authentication/authorization and add client-level rate limiting to prevent abuse, scraping, and denial-of-service patterns.
 
 ---
 
-## 7. Your Call — Reasoning Summary
+## 7. Reasoning Summary
 
 | Area | Decision | Reason |
 |---|---|---|
